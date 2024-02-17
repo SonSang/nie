@@ -8,11 +8,11 @@ import torch.nn as nn
 
 import nvdiffrast.torch as dr
 
-from pytorch_lightning.utilities.seed import seed_everything
+# from pytorch_lightning.utilities.seed import 
 from PIL import Image
 import utils
 
-seed_everything(42)
+# seed_everything(42)
 
 class Renderer:
     def __init__(self, num_views, res, fname=None, scale=1.75):
@@ -24,10 +24,10 @@ class Renderer:
         self.mvs = []
         self.lightdir = []
 
-        self.glctx = dr.RasterizeGLContext()
+        self.glctx = dr.RasterizeCudaContext('cuda:0') # dr.RasterizeGLContext()
         self.zero_tensor = torch.as_tensor(0.0, dtype=torch.float32, device='cuda')
         proj  = utils.projection(x=0.5, n=1.5, f=100.0)
-        self.fov_x = np.rad2deg(2 * np.arctan(0.5))
+        self.fov_x = np.rad2deg(2 * np.arctan(0.5))     # not used;
 
         t = utils.translate(0, 0, 4.)
         e = 1.5/0.5
@@ -35,7 +35,7 @@ class Renderer:
 
         self.intrinsics = np.array([[focal_length, 0., res/2],
                                 [0., focal_length, res/2],
-                                [0., 0., 1.]])
+                                [0., 0., 1.]])          # not used;
 
         self.albedo = 0.55
         self.scale = scale
@@ -71,11 +71,11 @@ class Renderer:
         self.mesh = mesh
 
         normals = mesh.vertex_normals
-        normals = torch.as_tensor(normals, dtype=torch.float32,\
+        normals = torch.tensor(normals, dtype=torch.float32,\
                 device='cuda').contiguous()
 
-        v = torch.as_tensor(mesh.vertices, dtype=torch.float32, device='cuda').contiguous()
-        f = torch.as_tensor(mesh.faces, dtype=torch.int32,\
+        v = torch.tensor(mesh.vertices, dtype=torch.float32, device='cuda').contiguous()
+        f = torch.tensor(mesh.faces, dtype=torch.int32,\
                 device='cuda').contiguous()
 
         self.target_imgs = self.render(v, f, normals)

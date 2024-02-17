@@ -2,7 +2,8 @@ import pdb
 import numpy as np
 import torch
 import torch.nn as nn
-from pytorch_lightning.core.lightning import LightningModule
+from pytorch_lightning.core import LightningModule
+#from pytorch_lightning.core.lightning import LightningModule
 from utils import *
 
 # Initialization functions are borrowed from:
@@ -114,7 +115,7 @@ class SDFModule(LightningModule):
             ys[..., np.newaxis],
             xs[..., np.newaxis],
             zs[..., np.newaxis]
-        ], axis=-1).astype(np.float)
+        ], axis=-1).astype(np.float32)
         grid = (grid / float(res - 1) - 0.5) * 2 * bound
         grid = grid.reshape(-1, 3)
         voxel_size = 2.0 / (res - 1)
