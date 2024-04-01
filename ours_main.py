@@ -80,7 +80,7 @@ def main(config):
     # renderer;
     num_viewpoints = int(float(config.num_views))
     image_size = int(float(config.res))
-    mv, proj = make_star_cameras(num_viewpoints, num_viewpoints, distance=2.0, r=0.75, n=1.0, f=3.0)
+    mv, proj = make_star_cameras(num_viewpoints, num_viewpoints, distance=2.0, r=0.6, n=1.0, f=3.0)
     renderer = AlphaRenderer(mv, proj, [image_size, image_size])
 
     gt_manager = GTInitializer(verts, faces, DEVICE)
@@ -149,7 +149,12 @@ def main(config):
         vertex_normals = calc_vertex_normals(vertices[:v], faces[:f].to(dtype=th.long), face_normals)
         col = renderer.forward(vertices[:v], vertex_normals, faces[:f])[0]
         imgs = col[:, :, :, :3]
-        loss = img_loss(imgs, target_imgs, multi_scale=True)
+        
+        diffuse_imgs = col[:, :, :, :3]
+        depth_imgs = col[:, :, :, 3:4]
+        diffuse_loss = (diffuse_imgs - gt_diffuse_map).abs().mean()
+        depth_loss = (depth_imgs - gt_depth_map).abs().mean()
+        loss = diffuse_loss + depth_loss
         loss = loss + laplace_lam * laplacian_loss
 
         loss.backward()
